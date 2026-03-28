@@ -139,7 +139,7 @@ function EnrollmentForm({ userId, enrollerId, existingFingers }: { userId: strin
               </p>
             </div>
             <Button
-              className="w-full h-12 text-base bg-linear-to-b from-primary to-primary/70 text-primary-foreground shadow-lg shadow-primary/30 hover:from-primary/90 hover:to-primary/60 hover:shadow-xl hover:shadow-primary/40 hover:scale-[1.02] active:scale-[0.98] transition-all duration-200 animate-pulse"
+              className="w-full h-12 text-base bg-primary text-primary-foreground shadow-lg shadow-primary/30 hover:bg-primary/85 hover:shadow-xl hover:shadow-primary/40 hover:scale-[1.02] active:scale-[0.98] transition-all duration-200 animate-pulse"
               onClick={() => refreshStatus()}
             >
               <RefreshCw className="h-5 w-5 mr-2" />
