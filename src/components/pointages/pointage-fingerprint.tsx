@@ -181,27 +181,27 @@ export function PointageFingerprint({ antenneId, onPointageComplete }: Props) {
             {status.available && status.deviceConnected ? (
               <>
                 <div className="relative mx-auto w-20 h-20">
-                  <div className="absolute inset-0 rounded-full bg-primary/10 animate-ping" style={{ animationDuration: "2s" }} />
-                  <div className="relative flex items-center justify-center w-20 h-20 rounded-full bg-primary/10">
-                    <Fingerprint className="h-10 w-10 text-primary animate-pulse" />
+                  <div className="absolute inset-0 rounded-full bg-primary/8 animate-ping" style={{ animationDuration: "2.5s" }} />
+                  <div className="relative flex items-center justify-center w-20 h-20 rounded-full bg-primary/8">
+                    <Fingerprint className="h-10 w-10 text-primary/70" />
                   </div>
                 </div>
                 <p className="text-muted-foreground font-medium">Placez votre doigt sur le lecteur...</p>
-                <p className="text-xs text-muted-foreground/60">La capture demarre automatiquement</p>
+                <p className="text-xs text-muted-foreground/50">La capture demarre automatiquement</p>
               </>
             ) : (
               <div className="space-y-3">
-                <div className="text-center p-4 bg-linear-to-br from-amber-50 to-orange-50 rounded-xl border border-amber-200/60">
-                  <XCircle className="h-8 w-8 text-amber-600 mx-auto mb-2" />
-                  <p className="font-medium text-amber-800">Lecteur non connecte</p>
-                  <p className="text-xs text-amber-600 mt-1">
+                <div className="text-center p-4 bg-muted rounded-xl border border-border">
+                  <XCircle className="h-8 w-8 text-muted-foreground mx-auto mb-2" />
+                  <p className="font-medium">Lecteur non connecte</p>
+                  <p className="text-xs text-muted-foreground mt-1">
                     {!status.available
                       ? "Le service SecuGen WebAPI n'est pas accessible"
                       : "Branchez le lecteur d'empreinte et reessayez"}
                   </p>
                 </div>
                 <Button
-                  className="w-full h-14 text-base bg-blue-600 text-white shadow-lg shadow-blue-600/30 hover:bg-blue-800 hover:shadow-xl hover:shadow-blue-800/40 hover:scale-[1.02] active:scale-[0.98] transition-all duration-300"
+                  className="w-full h-14 text-base bg-primary text-primary-foreground shadow-md shadow-primary/20 hover:opacity-85 hover:shadow-lg hover:scale-[1.02] active:scale-[0.98] transition-all duration-300"
                   onClick={() => refreshStatus()}
                 >
                   <RefreshCw className="h-5 w-5 mr-2" />
@@ -231,48 +231,35 @@ export function PointageFingerprint({ antenneId, onPointageComplete }: Props) {
 
         {/* Success */}
         {phase === "success" && identifiedUser && (
-          <div className="text-center p-5 rounded-xl border animate-scale-in space-y-2"
-            style={{
-              background: actionEffectuee === "depart"
-                ? "linear-gradient(to bottom right, #fff7ed, #ffedd5)"
-                : actionEffectuee === "deja_complet"
-                  ? "linear-gradient(to bottom right, #f0f9ff, #e0f2fe)"
-                  : "linear-gradient(to bottom right, #ecfdf5, #d1fae5)",
-              borderColor: actionEffectuee === "depart"
-                ? "#fed7aa"
-                : actionEffectuee === "deja_complet"
-                  ? "#bae6fd"
-                  : "#a7f3d0",
-            }}
-          >
+          <div className="text-center p-5 rounded-xl border border-primary/20 bg-primary/5 animate-scale-in space-y-2">
             {actionEffectuee === "arrivee" && (
               <>
-                <LogIn className="h-10 w-10 text-emerald-600 mx-auto" />
-                <p className="text-lg font-bold text-emerald-700">Arrivee enregistree !</p>
+                <LogIn className="h-10 w-10 text-primary mx-auto" />
+                <p className="text-lg font-bold">Arrivee enregistree !</p>
               </>
             )}
             {actionEffectuee === "depart" && (
               <>
-                <LogOut className="h-10 w-10 text-orange-600 mx-auto" />
-                <p className="text-lg font-bold text-orange-700">Depart enregistre !</p>
+                <LogOut className="h-10 w-10 text-primary mx-auto" />
+                <p className="text-lg font-bold">Depart enregistre !</p>
               </>
             )}
             {actionEffectuee === "deja_complet" && (
               <>
-                <CheckCircle className="h-10 w-10 text-blue-600 mx-auto" />
-                <p className="text-lg font-bold text-blue-700">Deja pointe aujourd&apos;hui</p>
+                <CheckCircle className="h-10 w-10 text-muted-foreground mx-auto" />
+                <p className="text-lg font-bold">Deja pointe aujourd&apos;hui</p>
               </>
             )}
-            <p className="text-base font-semibold">{identifiedUser.prenom} {identifiedUser.nom}</p>
+            <p className="text-base font-semibold text-muted-foreground">{identifiedUser.prenom} {identifiedUser.nom}</p>
           </div>
         )}
 
         {/* Error - auto-retry after 4s */}
         {phase === "error" && (
           <div className="space-y-3 animate-fade-in">
-            <div className="text-center p-4 bg-linear-to-br from-red-50 to-rose-50 rounded-xl border border-red-200/60">
-              <XCircle className="h-8 w-8 text-red-600 mx-auto mb-2" />
-              <p className="text-red-700">{error}</p>
+            <div className="text-center p-4 bg-destructive/5 rounded-xl border border-destructive/20">
+              <XCircle className="h-8 w-8 text-destructive mx-auto mb-2" />
+              <p className="text-destructive font-medium">{error}</p>
               <p className="text-xs text-muted-foreground mt-2">Nouvel essai automatique...</p>
             </div>
             <Button variant="outline" className="w-full" onClick={reset}>

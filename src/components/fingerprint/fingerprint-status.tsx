@@ -18,7 +18,7 @@ export function FingerprintStatus() {
 
   if (!status.deviceConnected) {
     return (
-      <Badge variant="secondary" className="gap-1 bg-yellow-100 text-yellow-800">
+      <Badge variant="secondary" className="gap-1">
         <Fingerprint className="h-3 w-3" />
         Lecteur non connecte
       </Badge>
@@ -26,7 +26,7 @@ export function FingerprintStatus() {
   }
 
   return (
-    <Badge variant="secondary" className="gap-1 bg-green-100 text-green-800">
+    <Badge variant="secondary" className="gap-1 border-primary/30 text-primary">
       <Fingerprint className="h-3 w-3" />
       Lecteur pret
     </Badge>

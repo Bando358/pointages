@@ -129,17 +129,17 @@ function EnrollmentForm({ userId, enrollerId, existingFingers }: { userId: strin
 
         {phase === "idle" && (!status.available || !status.deviceConnected) && (
           <div className="space-y-3">
-            <div className="text-center p-4 bg-linear-to-br from-amber-50 to-orange-50 rounded-xl border border-amber-200/60">
-              <XCircle className="h-8 w-8 text-amber-600 mx-auto mb-2" />
-              <p className="font-medium text-amber-800">Lecteur non connecte</p>
-              <p className="text-xs text-amber-600 mt-1">
+            <div className="text-center p-4 bg-muted rounded-xl border border-border">
+              <XCircle className="h-8 w-8 text-muted-foreground mx-auto mb-2" />
+              <p className="font-medium">Lecteur non connecte</p>
+              <p className="text-xs text-muted-foreground mt-1">
                 {!status.available
                   ? "Le service SecuGen WebAPI n'est pas accessible"
                   : "Branchez le lecteur d'empreinte et reessayez"}
               </p>
             </div>
             <Button
-              className="w-full h-12 text-base bg-blue-600 text-white shadow-lg shadow-blue-600/30 hover:bg-blue-800 hover:shadow-xl hover:shadow-blue-800/40 hover:scale-[1.02] active:scale-[0.98] transition-all duration-300"
+              className="w-full h-12 text-base bg-primary text-primary-foreground shadow-md shadow-primary/20 hover:opacity-85 hover:shadow-lg hover:scale-[1.02] active:scale-[0.98] transition-all duration-300"
               onClick={() => refreshStatus()}
             >
               <RefreshCw className="h-5 w-5 mr-2" />
