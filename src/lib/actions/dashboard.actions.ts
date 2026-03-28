@@ -96,6 +96,68 @@ export async function fetchDashboardData(options: {
     }),
   ]);
 
+  // Listings detailles du mois
+  const [retardataires, absentsList, congesList, absencesTempList] = await Promise.all([
+    // Top retardataires du mois
+    prisma.pointage.groupBy({
+      by: ["userId"],
+      where: {
+        date: { gte: monthStart, lte: monthEnd },
+        statut: "RETARD",
+        user: { ...excludeSuperAdmin, ...antenneFilter },
+      },
+      _count: true,
+      _sum: { retardMinutes: true },
+      orderBy: { _count: { userId: "desc" } },
+      take: 20,
+    }),
+
+    // Absents du mois
+    prisma.pointage.findMany({
+      where: {
+        date: { gte: monthStart, lte: monthEnd },
+        statut: { in: ["ABSENT", "ABSENCE_NON_AUTORISEE"] },
+        user: { ...excludeSuperAdmin, ...antenneFilter },
+      },
+      include: { user: { select: { nom: true, prenom: true, antenne: { select: { nom: true } } } } },
+      orderBy: { date: "desc" },
+      take: 30,
+    }),
+
+    // Conges du mois
+    prisma.conge.findMany({
+      where: {
+        OR: [
+          { dateDebut: { gte: monthStart, lte: monthEnd } },
+          { dateFin: { gte: monthStart, lte: monthEnd } },
+        ],
+        user: { ...excludeSuperAdmin, ...antenneFilter },
+      },
+      include: { user: { select: { nom: true, prenom: true, antenne: { select: { nom: true } } } } },
+      orderBy: { createdAt: "desc" },
+      take: 20,
+    }),
+
+    // Absences temporaires du mois
+    prisma.absenceTemp.findMany({
+      where: {
+        date: { gte: monthStart, lte: monthEnd },
+        user: { ...excludeSuperAdmin, ...antenneFilter },
+      },
+      include: { user: { select: { nom: true, prenom: true } }, validePar: { select: { nom: true, prenom: true } } },
+      orderBy: { createdAt: "desc" },
+      take: 20,
+    }),
+  ]);
+
+  // Enrichir retardataires avec noms
+  const retardataireUserIds = retardataires.map((r) => r.userId);
+  const retardataireUsers = await prisma.user.findMany({
+    where: { id: { in: retardataireUserIds } },
+    select: { id: true, nom: true, prenom: true, antenne: { select: { nom: true } } },
+  });
+  const retardataireMap = Object.fromEntries(retardataireUsers.map((u) => [u.id, u]));
+
   // Stats mois
   const presents = pointagesMois.filter((p) => p.statut === "PRESENT" || p.statut === "RETARD").length;
   const ponctuels = pointagesMois.filter((p) => p.statut === "PRESENT").length;
@@ -193,6 +255,46 @@ export async function fetchDashboardData(options: {
       retardsParJour: chartRetardsParJour,
       statuts: chartStatuts,
       heuresParSemaine: chartHeuresParSemaine,
+    },
+    listings: {
+      retardataires: retardataires.map((r) => {
+        const u = retardataireMap[r.userId];
+        return {
+          nom: u?.nom ?? "?",
+          prenom: u?.prenom ?? "?",
+          antenne: u?.antenne?.nom ?? "-",
+          count: r._count,
+          totalMinutes: r._sum.retardMinutes ?? 0,
+        };
+      }),
+      absents: absentsList.map((p: any) => ({
+        nom: p.user.nom,
+        prenom: p.user.prenom,
+        antenne: p.user.antenne?.nom ?? "-",
+        date: p.date.toISOString(),
+        statut: p.statut,
+        observations: p.observations,
+      })),
+      conges: congesList.map((c: any) => ({
+        nom: c.user.nom,
+        prenom: c.user.prenom,
+        antenne: c.user.antenne?.nom ?? "-",
+        dateDebut: c.dateDebut.toISOString(),
+        dateFin: c.dateFin.toISOString(),
+        type: c.type,
+        statut: c.statut,
+        motif: c.motif,
+      })),
+      absencesTemp: absencesTempList.map((a: any) => ({
+        nom: a.user.nom,
+        prenom: a.user.prenom,
+        heureSortie: a.heureSortie.toISOString(),
+        heureRetour: a.heureRetour?.toISOString() ?? null,
+        type: a.type,
+        motif: a.motif,
+        statut: a.statut,
+        validePar: a.validePar ? `${a.validePar.prenom} ${a.validePar.nom}` : null,
+      })),
     },
   };
 }

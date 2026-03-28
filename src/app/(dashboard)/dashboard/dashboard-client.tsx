@@ -6,12 +6,27 @@ import { StatCard } from "@/components/dashboard/stat-card";
 import { RetardsParJourChart, StatutsDonutChart, HeuresParSemaineChart } from "@/components/dashboard/dashboard-charts";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
+import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
+import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
 import {
   Users, Clock, TrendingUp, AlertTriangle,
   CalendarDays, Timer, CheckCircle, XCircle, Fingerprint, Filter,
 } from "lucide-react";
-import { STATUT_POINTAGE_LABELS, STATUT_POINTAGE_COLORS, isGlobalRole } from "@/lib/constants";
+import { STATUT_POINTAGE_LABELS, STATUT_POINTAGE_COLORS, TYPE_ABSENCE_TEMP_LABELS, isGlobalRole } from "@/lib/constants";
 import { formatTimeFr } from "@/lib/date-utils";
+
+const CONGE_TYPE_LABELS: Record<string, string> = {
+  ANNUEL: "Annuel", MALADIE: "Maladie", MATERNITE: "Maternite",
+  PATERNITE: "Paternite", EXCEPTIONNEL: "Exceptionnel", SANS_SOLDE: "Sans solde",
+};
+const CONGE_STATUT_COLORS: Record<string, string> = {
+  BROUILLON: "bg-muted text-muted-foreground", SOUMIS: "text-primary",
+  APPROUVE: "text-primary", REFUSE: "text-destructive", ANNULE: "text-muted-foreground",
+};
+const ABSENCE_TEMP_LABELS: Record<string, string> = TYPE_ABSENCE_TEMP_LABELS;
+const ABSENCE_STATUT_COLORS: Record<string, string> = {
+  EN_ATTENTE: "text-primary", APPROUVE: "text-primary", REFUSE: "text-destructive",
+};
 
 const MONTHS = [
   "Janvier", "Fevrier", "Mars", "Avril", "Mai", "Juin",
@@ -66,6 +81,7 @@ export function DashboardClient({
   const aujourdhui = data?.aujourdhui ?? {};
   const semaine = data?.semaine ?? {};
   const charts = data?.charts ?? {};
+  const listings = data?.listings ?? {};
 
   return (
     <div className="space-y-6">
@@ -247,6 +263,181 @@ export function DashboardClient({
           <HeuresParSemaineChart data={charts.heuresParSemaine} />
         )}
       </div>
+
+      {/* Listings detailles */}
+      {role !== "EMPLOYE" && (
+        <Tabs defaultValue="retardataires" className="space-y-4">
+          <TabsList>
+            <TabsTrigger value="retardataires">
+              Retardataires
+              {listings.retardataires?.length > 0 && <Badge variant="secondary" className="ml-1.5 text-xs">{listings.retardataires.length}</Badge>}
+            </TabsTrigger>
+            <TabsTrigger value="absents">
+              Absents
+              {listings.absents?.length > 0 && <Badge variant="secondary" className="ml-1.5 text-xs">{listings.absents.length}</Badge>}
+            </TabsTrigger>
+            <TabsTrigger value="conges">
+              Conges
+              {listings.conges?.length > 0 && <Badge variant="secondary" className="ml-1.5 text-xs">{listings.conges.length}</Badge>}
+            </TabsTrigger>
+            <TabsTrigger value="absencesTemp">
+              Absences temp.
+              {listings.absencesTemp?.length > 0 && <Badge variant="secondary" className="ml-1.5 text-xs">{listings.absencesTemp.length}</Badge>}
+            </TabsTrigger>
+          </TabsList>
+
+          {/* Tab Retardataires */}
+          <TabsContent value="retardataires">
+            <Card>
+              <CardHeader><CardTitle className="text-base">Top retardataires - {MONTHS[month - 1]} {year}</CardTitle></CardHeader>
+              <CardContent>
+                {listings.retardataires?.length > 0 ? (
+                  <div className="space-y-2">
+                    {listings.retardataires.map((r: any, i: number) => (
+                      <div key={i} className="flex items-center justify-between py-2 border-b border-border/40 last:border-0">
+                        <div className="flex items-center gap-3">
+                          <span className="text-sm font-bold text-muted-foreground w-6">{i + 1}.</span>
+                          <div>
+                            <p className="text-sm font-medium">{r.prenom} {r.nom}</p>
+                            <p className="text-xs text-muted-foreground">{r.antenne}</p>
+                          </div>
+                        </div>
+                        <div className="text-right">
+                          <p className="text-sm font-bold">{r.count} retard{r.count > 1 ? "s" : ""}</p>
+                          <p className="text-xs text-muted-foreground">{r.totalMinutes} min cumulees</p>
+                        </div>
+                      </div>
+                    ))}
+                  </div>
+                ) : (
+                  <p className="text-sm text-muted-foreground text-center py-6">Aucun retard ce mois</p>
+                )}
+              </CardContent>
+            </Card>
+          </TabsContent>
+
+          {/* Tab Absents */}
+          <TabsContent value="absents">
+            <Card>
+              <CardHeader><CardTitle className="text-base">Absences - {MONTHS[month - 1]} {year}</CardTitle></CardHeader>
+              <CardContent>
+                {listings.absents?.length > 0 ? (
+                  <Table>
+                    <TableHeader>
+                      <TableRow>
+                        <TableHead>Employe</TableHead>
+                        <TableHead>Antenne</TableHead>
+                        <TableHead>Date</TableHead>
+                        <TableHead>Type</TableHead>
+                        <TableHead>Observations</TableHead>
+                      </TableRow>
+                    </TableHeader>
+                    <TableBody>
+                      {listings.absents.map((a: any, i: number) => (
+                        <TableRow key={i}>
+                          <TableCell className="font-medium">{a.prenom} {a.nom}</TableCell>
+                          <TableCell className="text-sm text-muted-foreground">{a.antenne}</TableCell>
+                          <TableCell className="text-sm">{new Date(a.date).toLocaleDateString("fr-FR")}</TableCell>
+                          <TableCell>
+                            <Badge variant="secondary" className="text-xs">
+                              {STATUT_POINTAGE_LABELS[a.statut] ?? a.statut}
+                            </Badge>
+                          </TableCell>
+                          <TableCell className="text-sm text-muted-foreground max-w-[150px] truncate">{a.observations ?? "-"}</TableCell>
+                        </TableRow>
+                      ))}
+                    </TableBody>
+                  </Table>
+                ) : (
+                  <p className="text-sm text-muted-foreground text-center py-6">Aucune absence ce mois</p>
+                )}
+              </CardContent>
+            </Card>
+          </TabsContent>
+
+          {/* Tab Conges */}
+          <TabsContent value="conges">
+            <Card>
+              <CardHeader><CardTitle className="text-base">Conges - {MONTHS[month - 1]} {year}</CardTitle></CardHeader>
+              <CardContent>
+                {listings.conges?.length > 0 ? (
+                  <Table>
+                    <TableHeader>
+                      <TableRow>
+                        <TableHead>Employe</TableHead>
+                        <TableHead>Antenne</TableHead>
+                        <TableHead>Debut</TableHead>
+                        <TableHead>Fin</TableHead>
+                        <TableHead>Type</TableHead>
+                        <TableHead>Statut</TableHead>
+                      </TableRow>
+                    </TableHeader>
+                    <TableBody>
+                      {listings.conges.map((c: any, i: number) => (
+                        <TableRow key={i}>
+                          <TableCell className="font-medium">{c.prenom} {c.nom}</TableCell>
+                          <TableCell className="text-sm text-muted-foreground">{c.antenne}</TableCell>
+                          <TableCell className="text-sm">{new Date(c.dateDebut).toLocaleDateString("fr-FR")}</TableCell>
+                          <TableCell className="text-sm">{new Date(c.dateFin).toLocaleDateString("fr-FR")}</TableCell>
+                          <TableCell className="text-sm">{CONGE_TYPE_LABELS[c.type] ?? c.type}</TableCell>
+                          <TableCell>
+                            <Badge variant="secondary" className={`text-xs ${CONGE_STATUT_COLORS[c.statut] ?? ""}`}>
+                              {c.statut}
+                            </Badge>
+                          </TableCell>
+                        </TableRow>
+                      ))}
+                    </TableBody>
+                  </Table>
+                ) : (
+                  <p className="text-sm text-muted-foreground text-center py-6">Aucun conge ce mois</p>
+                )}
+              </CardContent>
+            </Card>
+          </TabsContent>
+
+          {/* Tab Absences temporaires */}
+          <TabsContent value="absencesTemp">
+            <Card>
+              <CardHeader><CardTitle className="text-base">Absences temporaires - {MONTHS[month - 1]} {year}</CardTitle></CardHeader>
+              <CardContent>
+                {listings.absencesTemp?.length > 0 ? (
+                  <Table>
+                    <TableHeader>
+                      <TableRow>
+                        <TableHead>Employe</TableHead>
+                        <TableHead>Sortie</TableHead>
+                        <TableHead>Retour</TableHead>
+                        <TableHead>Type</TableHead>
+                        <TableHead>Motif</TableHead>
+                        <TableHead>Statut</TableHead>
+                      </TableRow>
+                    </TableHeader>
+                    <TableBody>
+                      {listings.absencesTemp.map((a: any, i: number) => (
+                        <TableRow key={i}>
+                          <TableCell className="font-medium">{a.prenom} {a.nom}</TableCell>
+                          <TableCell className="text-sm">{formatTimeFr(a.heureSortie)}</TableCell>
+                          <TableCell className="text-sm">{a.heureRetour ? formatTimeFr(a.heureRetour) : <span className="text-muted-foreground">En cours</span>}</TableCell>
+                          <TableCell className="text-sm">{ABSENCE_TEMP_LABELS[a.type] ?? a.type}</TableCell>
+                          <TableCell className="text-sm text-muted-foreground max-w-[150px] truncate">{a.motif}</TableCell>
+                          <TableCell>
+                            <Badge variant="secondary" className={`text-xs ${ABSENCE_STATUT_COLORS[a.statut] ?? ""}`}>
+                              {a.statut === "EN_ATTENTE" ? "En attente" : a.statut === "APPROUVE" ? "Approuve" : "Refuse"}
+                            </Badge>
+                          </TableCell>
+                        </TableRow>
+                      ))}
+                    </TableBody>
+                  </Table>
+                ) : (
+                  <p className="text-sm text-muted-foreground text-center py-6">Aucune absence temporaire ce mois</p>
+                )}
+              </CardContent>
+            </Card>
+          </TabsContent>
+        </Tabs>
+      )}
     </div>
   );
 }
