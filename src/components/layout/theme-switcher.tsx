@@ -8,24 +8,24 @@ import {
   DropdownMenuItem,
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
-import { Leaf, Waves, Sun, Moon } from "lucide-react";
+import { Waves, Palette, TreePine, Moon } from "lucide-react";
 
 const THEMES = [
-  { value: "emeraude", label: "Emeraude", icon: Leaf },
   { value: "ocean", label: "Ocean", icon: Waves },
-  { value: "ambre", label: "Ambre", icon: Sun },
-  { value: "dark", label: "Sombre", icon: Moon },
+  { value: "ardoise", label: "Ardoise", icon: Palette },
+  { value: "foret", label: "Foret", icon: TreePine },
+  { value: "nuit", label: "Nuit", icon: Moon },
 ] as const;
 
 type ThemeId = (typeof THEMES)[number]["value"];
 
 export function ThemeSwitcher() {
-  const [current, setCurrent] = useState<ThemeId>("emeraude");
+  const [current, setCurrent] = useState<ThemeId>("ocean");
   const [mounted, setMounted] = useState(false);
 
   useEffect(() => {
     setMounted(true);
-    const stored = (localStorage.getItem("pointage-theme") as ThemeId) || "emeraude";
+    const stored = (localStorage.getItem("pointage-theme") as ThemeId) || "ocean";
     setCurrent(stored);
     document.documentElement.setAttribute("data-theme", stored);
   }, []);
@@ -42,7 +42,7 @@ export function ThemeSwitcher() {
   return (
     <DropdownMenu>
       <DropdownMenuTrigger render={<Button variant="ghost" size="icon" className="h-8 w-8" />}>
-        {mounted ? <Icon className="h-4 w-4" /> : <Leaf className="h-4 w-4" />}
+        {mounted ? <Icon className="h-4 w-4" /> : <Waves className="h-4 w-4" />}
         <span className="sr-only">Changer le theme</span>
       </DropdownMenuTrigger>
       <DropdownMenuContent align="end">
