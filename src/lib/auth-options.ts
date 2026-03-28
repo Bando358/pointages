@@ -70,7 +70,7 @@ export const authOptions: NextAuthOptions = {
       },
     }),
   ],
-  session: { strategy: "jwt", maxAge: 12 * 60 * 60 },
+  session: { strategy: "jwt", maxAge: 365 * 24 * 60 * 60 },
   pages: { signIn: "/login" },
   cookies: {
     sessionToken: {
@@ -96,9 +96,25 @@ export const authOptions: NextAuthOptions = {
         token.accesGlobal = (user as any).accesGlobal;
         token.loginType = (user as any).loginType;
       }
+
+      // Kiosk : session infinie. User normal : expire apres 12h.
+      if (token.loginType !== "kiosk") {
+        const TWELVE_HOURS = 12 * 60 * 60;
+        const issuedAt = (token.iat as number) ?? Math.floor(Date.now() / 1000);
+        const now = Math.floor(Date.now() / 1000);
+        if (now - issuedAt > TWELVE_HOURS) {
+          return { ...token, expired: true };
+        }
+      }
+
       return token;
     },
     async session({ session, token }) {
+      // User normal expire : forcer la deconnexion
+      if ((token as any).expired) {
+        return { ...session, user: undefined as any, expires: new Date(0).toISOString() };
+      }
+
       if (session.user) {
         (session.user as any).id = token.id;
         (session.user as any).nom = token.nom;
