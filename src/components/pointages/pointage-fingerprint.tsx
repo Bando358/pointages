@@ -201,7 +201,7 @@ export function PointageFingerprint({ antenneId, onPointageComplete }: Props) {
                   </p>
                 </div>
                 <Button
-                  className="w-full h-14 text-base bg-blue-600 text-white shadow-lg shadow-blue-600/30 hover:bg-blue-800 hover:shadow-xl hover:shadow-blue-800/40 hover:scale-[1.02] active:scale-[0.98] transition-all duration-300"
+                  className="w-full h-14 text-base bg-blue-600 text-white shadow-lg shadow-blue-600/30 hover:bg-blue-800 hover:shadow-xl hover:shadow-blue-800/40 hover:scale-[1.02] active:scale-[0.98] transition-all duration-300 animate-pulse-dark"
                   onClick={() => refreshStatus()}
                 >
                   <RefreshCw className="h-5 w-5 mr-2" />

@@ -31,6 +31,10 @@
   0%, 100% { transform: translateY(0px); }
   50% { transform: translateY(-4px); }
 }
+@keyframes pulse-dark {
+  0%, 100% { opacity: 1; }
+  50% { opacity: 0.82; }
+}
 
 .animate-fade-in { animation: fade-in 0.4s ease-out both; }
 .animate-fade-in-up { animation: fade-in-up 0.5s ease-out both; }
@@ -38,6 +42,7 @@
 .animate-shimmer { animation: shimmer 2s linear infinite; background-size: 200% 100%; }
 .animate-gradient-shift { animation: gradient-shift 6s ease infinite; background-size: 200% 200%; }
 .animate-float { animation: float 3s ease-in-out infinite; }
+.animate-pulse-dark { animation: pulse-dark 2.5s ease-in-out infinite; }
 
 .stagger > *:nth-child(1) { animation-delay: 0ms; }
 .stagger > *:nth-child(2) { animation-delay: 60ms; }
