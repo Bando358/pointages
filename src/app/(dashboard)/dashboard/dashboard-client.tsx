@@ -252,17 +252,21 @@ export function DashboardClient({
       )}
 
       {/* Graphiques */}
-      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
-        {charts.retardsParJour?.length > 0 && (
-          <RetardsParJourChart data={charts.retardsParJour} />
-        )}
-        {charts.statuts?.length > 0 && (
-          <StatutsDonutChart data={charts.statuts} />
-        )}
-        {charts.heuresParSemaine?.length > 0 && (
-          <HeuresParSemaineChart data={charts.heuresParSemaine} />
-        )}
-      </div>
+      {(() => {
+        const hasRetards = charts.retardsParJour?.length > 0;
+        const hasStatuts = charts.statuts?.length > 0;
+        const hasHeures = charts.heuresParSemaine?.length > 0;
+        const count = [hasRetards, hasStatuts, hasHeures].filter(Boolean).length;
+        if (count === 0) return null;
+        const gridClass = count === 1 ? "grid-cols-1" : count === 2 ? "grid-cols-1 md:grid-cols-2" : "grid-cols-1 md:grid-cols-2 lg:grid-cols-3";
+        return (
+          <div className={`grid ${gridClass} gap-4`}>
+            {hasRetards && <RetardsParJourChart data={charts.retardsParJour} />}
+            {hasStatuts && <StatutsDonutChart data={charts.statuts} />}
+            {hasHeures && <HeuresParSemaineChart data={charts.heuresParSemaine} />}
+          </div>
+        );
+      })()}
 
       {/* Listings detailles */}
       {role !== "EMPLOYE" && (
