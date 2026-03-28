@@ -2,7 +2,6 @@
 
 import { useState } from "react";
 import { signIn } from "next-auth/react";
-import { useRouter } from "next/navigation";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
@@ -17,7 +16,6 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Fingerprint, Loader2, User, Monitor } from "lucide-react";
 
 export default function LoginPage() {
-  const router = useRouter();
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState("");
 
@@ -34,10 +32,16 @@ export default function LoginPage() {
       username,
       password,
       redirect: false,
+      callbackUrl: "/dashboard",
     });
     setLoading(false);
-    if (res?.error) setError("Identifiant ou mot de passe incorrect");
-    else router.push("/pointages");
+    if (res?.error) {
+      setError("Identifiant ou mot de passe incorrect");
+    } else if (res?.url) {
+      window.location.href = res.url;
+    } else {
+      window.location.href = "/dashboard";
+    }
   }
 
   async function handleKioskLogin(e: React.FormEvent) {
@@ -48,10 +52,16 @@ export default function LoginPage() {
       kioskLogin,
       kioskPassword,
       redirect: false,
+      callbackUrl: "/pointages",
     });
     setLoading(false);
-    if (res?.error) setError("Login antenne ou mot de passe incorrect");
-    else router.push("/pointages");
+    if (res?.error) {
+      setError("Login antenne ou mot de passe incorrect");
+    } else if (res?.url) {
+      window.location.href = res.url;
+    } else {
+      window.location.href = "/pointages";
+    }
   }
 
   return (
