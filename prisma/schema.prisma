@@ -1,0 +1,324 @@
+generator client {
+  provider = "prisma-client"
+  output   = "../src/generated/prisma"
+}
+
+datasource db {
+  provider = "postgresql"
+}
+
+// ==================== ENUMS ====================
+
+enum Role {
+  SUPER_ADMIN
+  ADMIN
+  GESTIONNAIRE
+  RESPONSABLE
+  EMPLOYE
+}
+
+enum StatutPointage {
+  PRESENT
+  RETARD
+  ABSENT
+  CONGE
+  MISSION
+  ARRET_MALADIE
+  ABSENCE_AUTORISEE
+  ABSENCE_NON_AUTORISEE
+  FERIE
+  DEMI_JOURNEE
+}
+
+enum TypeConge {
+  ANNUEL
+  MALADIE
+  MATERNITE
+  PATERNITE
+  EXCEPTIONNEL
+  SANS_SOLDE
+}
+
+enum StatutConge {
+  BROUILLON
+  SOUMIS
+  APPROUVE
+  REFUSE
+  ANNULE
+}
+
+enum EmpreinteEvent {
+  ENROLLMENT
+  IDENTIFICATION_SUCCESS
+  IDENTIFICATION_FAIL
+  TEMPLATE_DELETED
+  POINTAGE_ARRIVEE
+  POINTAGE_DEPART
+}
+
+/// Type de planning
+enum TypePlanning {
+  ADMINISTRATIF
+  GARDE
+  PERSONNALISE
+}
+
+/// Type d'absence temporaire (sortie en cours de journee)
+enum TypeAbsenceTemp {
+  MISSION_AIBEF
+  RAISON_PERSONNELLE
+  URGENCE
+  AUTRE
+}
+
+/// Statut de validation d'absence temporaire
+enum StatutAbsenceTemp {
+  EN_ATTENTE
+  APPROUVE
+  REFUSE
+}
+
+// ==================== MODELS ====================
+
+/// Antenne = site/bureau physique de l'AIBEF
+model Antenne {
+  id            String   @id @default(cuid())
+  nom           String   @unique
+  ville         String?
+  adresse       String?
+  telephone     String?
+  loginKiosk    String   @unique
+  passwordKiosk String
+  actif         Boolean  @default(true)
+  createdAt     DateTime @default(now())
+  updatedAt     DateTime @updatedAt
+
+  users     User[]
+  pointages Pointage[] @relation("PointageAntenne")
+  plannings Planning[]
+}
+
+model User {
+  id               String   @id @default(cuid())
+  nom              String
+  prenom           String
+  email            String   @unique
+  username         String   @unique
+  password         String
+  role             Role     @default(EMPLOYE)
+  actif            Boolean  @default(true)
+  /// Acces aux donnees de toutes les antennes
+  accesGlobal      Boolean  @default(false)
+  /// Horaires semaine (lundi-vendredi)
+  heureDebutFixe   String   @default("07:30")
+  heureFinFixe     String   @default("16:30")
+  /// Horaires samedi (si travaille le samedi)
+  heureDebutSamedi String?
+  heureFinSamedi   String?
+  /// Pause dejeuner fixe (non pointee, deduite auto du temps de travail)
+  pauseDebutFixe   String   @default("12:00")
+  pauseFinFixe     String   @default("13:00")
+  /// Duree pause en minutes (defaut 60 min = 1h)
+  dureePauseMinutes Int     @default(60)
+  travailleSamedi  Boolean  @default(false)
+  empreinteEnrolee Boolean  @default(false)
+  antenneId        String?
+  antenne          Antenne? @relation(fields: [antenneId], references: [id])
+  createdAt        DateTime @default(now())
+  updatedAt        DateTime @updatedAt
+
+  pointages           Pointage[]
+  empreintes          Empreinte[]
+  empreinteEnrolledBy Empreinte[]     @relation("EnrolledBy")
+  empreinteLogs       EmpreinteLog[]
+  conges              Conge[]
+  congesApprouves     Conge[]         @relation("ApprovedBy")
+  absencesTemp        AbsenceTemp[]
+  absencesTempValidees AbsenceTemp[]  @relation("ValidePar")
+  affectations        AffectationPlanning[]
+  auditLogs           AuditLog[]
+
+  @@index([antenneId])
+  @@index([actif])
+}
+
+model Pointage {
+  id            String         @id @default(cuid())
+  date          DateTime       @db.Date
+  heureArrivee  DateTime?
+  heureDepart   DateTime?
+  totalHeures   Float          @default(0)
+  statut        StatutPointage @default(PRESENT)
+  retardMinutes Int            @default(0)
+  heuresSupp    Float          @default(0)
+  /// Pause deduite automatiquement (non pointee)
+  pauseDeduite  Boolean        @default(true)
+  observations  String?
+  /// Declaration ecrite en cas d'oubli de pointage
+  justificatif  String?
+  /// Pointage saisi manuellement (secours)
+  saisieManuelle Boolean       @default(false)
+  userId        String
+  user          User           @relation(fields: [userId], references: [id], onDelete: Cascade)
+  antenneId     String?
+  antenne       Antenne?       @relation("PointageAntenne", fields: [antenneId], references: [id])
+  createdAt     DateTime       @default(now())
+  updatedAt     DateTime       @updatedAt
+
+  @@unique([userId, date])
+  @@index([date])
+  @@index([antenneId])
+}
+
+/// Absence temporaire en cours de journee (sortie + retour)
+model AbsenceTemp {
+  id           String           @id @default(cuid())
+  date         DateTime         @db.Date
+  heureSortie  DateTime
+  heureRetour  DateTime?
+  type         TypeAbsenceTemp
+  motif        String
+  /// Mission AIBEF = temps de travail, raison perso = non
+  compteCommeTravail Boolean    @default(false)
+  statut       StatutAbsenceTemp @default(EN_ATTENTE)
+  userId       String
+  user         User             @relation(fields: [userId], references: [id], onDelete: Cascade)
+  valideParId  String?
+  validePar    User?            @relation("ValidePar", fields: [valideParId], references: [id])
+  createdAt    DateTime         @default(now())
+  updatedAt    DateTime         @updatedAt
+}
+
+model Empreinte {
+  id           String   @id @default(cuid())
+  templateData String   @db.Text
+  doigt        Int
+  qualite      Int
+  actif        Boolean  @default(true)
+  userId       String
+  user         User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  enrolledById String?
+  enrolledBy   User?    @relation("EnrolledBy", fields: [enrolledById], references: [id])
+  createdAt    DateTime @default(now())
+  updatedAt    DateTime @updatedAt
+
+  @@unique([userId, doigt])
+  @@index([userId])
+  @@index([actif])
+}
+
+model EmpreinteLog {
+  id        String         @id @default(cuid())
+  event     EmpreinteEvent
+  userId    String
+  user      User           @relation(fields: [userId], references: [id], onDelete: Cascade)
+  details   String?
+  ipAddress String?
+  createdAt DateTime       @default(now())
+}
+
+model Conge {
+  id            String      @id @default(cuid())
+  dateDebut     DateTime    @db.Date
+  dateFin       DateTime    @db.Date
+  type          TypeConge
+  statut        StatutConge @default(BROUILLON)
+  motif         String?
+  userId        String
+  user          User        @relation(fields: [userId], references: [id], onDelete: Cascade)
+  approuveParId String?
+  approuvePar   User?       @relation("ApprovedBy", fields: [approuveParId], references: [id])
+  createdAt     DateTime    @default(now())
+  updatedAt     DateTime    @updatedAt
+}
+
+model JourFerie {
+  id   String   @id @default(cuid())
+  date DateTime @db.Date @unique
+  nom  String
+}
+
+model AuditLog {
+  id         String   @id @default(cuid())
+  action     String
+  entityType String
+  entityId   String?
+  details    String?  @db.Text
+  userId     String
+  user       User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  ipAddress  String?
+  createdAt  DateTime @default(now())
+}
+
+// ==================== MODULE PLANNING ====================
+
+/// Planning = modele de planning reutilisable
+model Planning {
+  id             String         @id @default(cuid())
+  nom            String
+  description    String?
+  type           TypePlanning   @default(ADMINISTRATIF)
+  /// Nombre de semaines dans le cycle de rotation (1 = meme chaque semaine, 2 = alternance A/B)
+  nombreSemaines Int            @default(1)
+  antenneId      String?
+  antenne        Antenne?       @relation(fields: [antenneId], references: [id])
+  actif          Boolean        @default(true)
+  createdAt      DateTime       @default(now())
+  updatedAt      DateTime       @updatedAt
+
+  semaines       PlanningSemaine[]
+  affectations   AffectationPlanning[]
+}
+
+/// Une semaine-type dans la rotation d'un planning
+model PlanningSemaine {
+  id            String   @id @default(cuid())
+  planningId    String
+  planning      Planning @relation(fields: [planningId], references: [id], onDelete: Cascade)
+  /// Numero de la semaine dans la rotation (1, 2, 3...)
+  numeroSemaine Int
+  label         String?
+  createdAt     DateTime @default(now())
+  updatedAt     DateTime @updatedAt
+
+  jours         PlanningJour[]
+
+  @@unique([planningId, numeroSemaine])
+}
+
+/// Un jour de travail dans une semaine-type
+model PlanningJour {
+  id            String          @id @default(cuid())
+  semaineId     String
+  semaine       PlanningSemaine @relation(fields: [semaineId], references: [id], onDelete: Cascade)
+  /// Jour de la semaine ISO : 1=Lundi ... 6=Samedi, 7=Dimanche
+  jourSemaine   Int
+  travaille     Boolean         @default(true)
+  heureDebut    String
+  heureFin      String
+  pauseDebut    String?
+  pauseFin      String?
+  dureePauseMin Int?
+  createdAt     DateTime        @default(now())
+  updatedAt     DateTime        @updatedAt
+
+  @@unique([semaineId, jourSemaine])
+}
+
+/// Affectation d'un planning a un employe avec plage de dates
+model AffectationPlanning {
+  id               String    @id @default(cuid())
+  userId           String
+  user             User      @relation(fields: [userId], references: [id], onDelete: Cascade)
+  planningId       String
+  planning         Planning  @relation(fields: [planningId], references: [id], onDelete: Cascade)
+  dateDebut        DateTime  @db.Date
+  dateFin          DateTime? @db.Date
+  /// Date de reference pour la semaine 1 de la rotation (un lundi)
+  dateRefSemaine1  DateTime  @db.Date
+  actif            Boolean   @default(true)
+  createdAt        DateTime  @default(now())
+  updatedAt        DateTime  @updatedAt
+
+  @@index([userId, dateDebut])
+}
