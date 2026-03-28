@@ -26,10 +26,12 @@ export async function fetchDashboardData(options: {
   role: string;
   antenneId?: string | null;
   userId?: string;
+  month?: number;
+  year?: number;
 }) {
   const now = new Date();
-  const year = now.getFullYear();
-  const month = now.getMonth() + 1;
+  const year = options.year ?? now.getFullYear();
+  const month = options.month ?? (now.getMonth() + 1);
   const { start: monthStart, end: monthEnd } = getMonthRange(year, month);
   const today = toDateOnly(now);
   const week = getWeekRange();
