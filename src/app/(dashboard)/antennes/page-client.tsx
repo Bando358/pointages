@@ -108,14 +108,14 @@ export function AntennesPageClient({ antennes }: Props) {
             <DialogHeader><DialogTitle>Creer une antenne</DialogTitle></DialogHeader>
             <form onSubmit={handleCreate} className="space-y-4">
               <div className="grid grid-cols-2 gap-3">
-                <div><Label>Nom de l&apos;antenne</Label><Input value={form.nom} onChange={(e) => setForm({ ...form, nom: e.target.value })} placeholder="Antenne Abidjan" required /></div>
-                <div><Label>Ville</Label><Input value={form.ville} onChange={(e) => setForm({ ...form, ville: e.target.value })} /></div>
+                <div className="space-y-1.5"><Label>Nom de l&apos;antenne</Label><Input value={form.nom} onChange={(e) => setForm({ ...form, nom: e.target.value })} placeholder="Antenne Abidjan" required /></div>
+                <div className="space-y-1.5"><Label>Ville</Label><Input value={form.ville} onChange={(e) => setForm({ ...form, ville: e.target.value })} /></div>
               </div>
               <div className="border-t pt-4">
                 <p className="text-sm font-medium mb-3">Compte kiosk (pour le poste de pointage)</p>
                 <div className="grid grid-cols-2 gap-3">
-                  <div><Label>Login kiosk</Label><Input value={form.loginKiosk} onChange={(e) => setForm({ ...form, loginKiosk: e.target.value })} placeholder="kiosk-abidjan" required /></div>
-                  <div><Label>Mot de passe kiosk</Label><Input type="password" value={form.passwordKiosk} onChange={(e) => setForm({ ...form, passwordKiosk: e.target.value })} required /></div>
+                  <div className="space-y-1.5"><Label>Login kiosk</Label><Input value={form.loginKiosk} onChange={(e) => setForm({ ...form, loginKiosk: e.target.value })} placeholder="kiosk-abidjan" required /></div>
+                  <div className="space-y-1.5"><Label>Mot de passe kiosk</Label><Input type="password" value={form.passwordKiosk} onChange={(e) => setForm({ ...form, passwordKiosk: e.target.value })} required /></div>
                 </div>
               </div>
               <Button type="submit" className="w-full">Creer l&apos;antenne</Button>
@@ -131,8 +131,8 @@ export function AntennesPageClient({ antennes }: Props) {
           {editAntenne && (
             <form onSubmit={handleUpdate} className="space-y-4">
               <div className="grid grid-cols-2 gap-3">
-                <div><Label>Nom</Label><Input value={editForm.nom} onChange={(e) => setEditForm({ ...editForm, nom: e.target.value })} required /></div>
-                <div><Label>Ville</Label><Input value={editForm.ville} onChange={(e) => setEditForm({ ...editForm, ville: e.target.value })} /></div>
+                <div className="space-y-1.5"><Label>Nom</Label><Input value={editForm.nom} onChange={(e) => setEditForm({ ...editForm, nom: e.target.value })} required /></div>
+                <div className="space-y-1.5"><Label>Ville</Label><Input value={editForm.ville} onChange={(e) => setEditForm({ ...editForm, ville: e.target.value })} /></div>
               </div>
               <div className="flex items-center justify-between">
                 <Label>Actif</Label>
@@ -141,7 +141,7 @@ export function AntennesPageClient({ antennes }: Props) {
               <div className="border-t pt-4">
                 <p className="text-sm font-medium mb-2">Compte kiosk</p>
                 <p className="text-xs text-muted-foreground mb-3">Login : <code className="bg-muted px-1 rounded">{editAntenne.loginKiosk}</code></p>
-                <div>
+                <div className="space-y-1.5">
                   <Label>Nouveau mot de passe kiosk (laisser vide pour ne pas changer)</Label>
                   <Input type="password" value={newKioskPassword} onChange={(e) => setNewKioskPassword(e.target.value)} placeholder="Nouveau mot de passe..." />
                 </div>
