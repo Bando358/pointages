@@ -403,7 +403,7 @@ export function EmployesPageClient({ users, antennes, currentRole, currentAntenn
                         <Switch checked={u.actif} onCheckedChange={() => toggleActif(u.id, u.actif)} />
                       </TableCell>
                       <TableCell>
-                        <div className="flex gap-1">
+                        <div className="flex gap-1 justify-center">
                           <Button variant="ghost" size="icon" onClick={() => openEdit(u)} title="Modifier">
                             <Pencil className="h-4 w-4" />
                           </Button>
