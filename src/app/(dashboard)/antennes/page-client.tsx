@@ -99,7 +99,7 @@ export function AntennesPageClient({ antennes }: Props) {
                 <TableHead>Ville</TableHead>
                 <TableHead>Login kiosk</TableHead>
                 <TableHead>Statut</TableHead>
-                <TableHead className="w-20">Actions</TableHead>
+                <TableHead className="w-20 text-center">Actions</TableHead>
               </TableRow>
             </TableHeader>
             <TableBody>
@@ -114,9 +114,11 @@ export function AntennesPageClient({ antennes }: Props) {
                     </Badge>
                   </TableCell>
                   <TableCell>
-                    <Button variant="ghost" size="icon" onClick={() => handleDelete(a.id)}>
-                      <Trash2 className="h-4 w-4 text-red-500" />
-                    </Button>
+                    <div className="flex gap-1 justify-center">
+                      <Button variant="ghost" size="icon" onClick={() => handleDelete(a.id)}>
+                        <Trash2 className="h-4 w-4 text-red-500" />
+                      </Button>
+                    </div>
                   </TableCell>
                 </TableRow>
               ))}
