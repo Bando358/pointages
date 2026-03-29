@@ -360,7 +360,7 @@ export function EmployesPageClient({ users, antennes, currentRole, currentAntenn
                   <TableHead className="cursor-pointer select-none" onClick={() => toggleSort("antenne")}>Antenne <SortIcon field="antenne" /></TableHead>
                   <TableHead className="cursor-pointer select-none" onClick={() => toggleSort("empreinte")}>Empreinte <SortIcon field="empreinte" /></TableHead>
                   <TableHead>Actif</TableHead>
-                  <TableHead>Actions</TableHead>
+                  <TableHead className="text-center">Actions</TableHead>
                 </TableRow>
               </TableHeader>
               <TableBody>
