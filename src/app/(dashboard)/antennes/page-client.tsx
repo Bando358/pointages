@@ -2,15 +2,16 @@
 
 import { useState } from "react";
 import { useRouter } from "next/navigation";
-import { createAntenne, deleteAntenne } from "@/lib/actions/auth.actions";
+import { createAntenne, updateAntenne, changeAntennePassword, deleteAntenne } from "@/lib/actions/auth.actions";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import { Card, CardContent } from "@/components/ui/card";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog";
 import { Badge } from "@/components/ui/badge";
-import { Building2, Plus, Trash2 } from "lucide-react";
+import { Switch } from "@/components/ui/switch";
+import { Building2, Plus, Trash2, Pencil } from "lucide-react";
 import { toast } from "sonner";
 
 interface Props {
@@ -24,6 +25,14 @@ export function AntennesPageClient({ antennes }: Props) {
     nom: "", ville: "", adresse: "", telephone: "",
     loginKiosk: "", passwordKiosk: "",
   });
+
+  // Edition
+  const [editOpen, setEditOpen] = useState(false);
+  const [editAntenne, setEditAntenne] = useState<any>(null);
+  const [editForm, setEditForm] = useState({
+    nom: "", ville: "", adresse: "", telephone: "", actif: true,
+  });
+  const [newKioskPassword, setNewKioskPassword] = useState("");
 
   async function handleCreate(e: React.FormEvent) {
     e.preventDefault();
@@ -39,6 +48,39 @@ export function AntennesPageClient({ antennes }: Props) {
       toast.success("Antenne creee avec succes");
       setOpen(false);
       setForm({ nom: "", ville: "", adresse: "", telephone: "", loginKiosk: "", passwordKiosk: "" });
+      router.refresh();
+    } catch (err: any) {
+      toast.error(err.message);
+    }
+  }
+
+  function openEdit(a: any) {
+    setEditAntenne(a);
+    setEditForm({
+      nom: a.nom, ville: a.ville ?? "", adresse: a.adresse ?? "",
+      telephone: a.telephone ?? "", actif: a.actif,
+    });
+    setNewKioskPassword("");
+    setEditOpen(true);
+  }
+
+  async function handleUpdate(e: React.FormEvent) {
+    e.preventDefault();
+    if (!editAntenne) return;
+    try {
+      await updateAntenne(editAntenne.id, {
+        nom: editForm.nom,
+        ville: editForm.ville || undefined,
+        adresse: editForm.adresse || undefined,
+        telephone: editForm.telephone || undefined,
+        actif: editForm.actif,
+      });
+      if (newKioskPassword.trim()) {
+        await changeAntennePassword(editAntenne.id, newKioskPassword);
+      }
+      toast.success("Antenne modifiee");
+      setEditOpen(false);
+      setEditAntenne(null);
       router.refresh();
     } catch (err: any) {
       toast.error(err.message);
@@ -90,6 +132,36 @@ export function AntennesPageClient({ antennes }: Props) {
         </Dialog>
       </div>
 
+      {/* Dialog Edition */}
+      <Dialog open={editOpen} onOpenChange={setEditOpen}>
+        <DialogContent>
+          <DialogHeader><DialogTitle>Modifier l&apos;antenne</DialogTitle></DialogHeader>
+          {editAntenne && (
+            <form onSubmit={handleUpdate} className="space-y-4">
+              <div><Label>Nom</Label><Input value={editForm.nom} onChange={(e) => setEditForm({ ...editForm, nom: e.target.value })} required /></div>
+              <div className="grid grid-cols-2 gap-3">
+                <div><Label>Ville</Label><Input value={editForm.ville} onChange={(e) => setEditForm({ ...editForm, ville: e.target.value })} /></div>
+                <div><Label>Telephone</Label><Input value={editForm.telephone} onChange={(e) => setEditForm({ ...editForm, telephone: e.target.value })} /></div>
+              </div>
+              <div><Label>Adresse</Label><Input value={editForm.adresse} onChange={(e) => setEditForm({ ...editForm, adresse: e.target.value })} /></div>
+              <div className="flex items-center justify-between">
+                <Label>Actif</Label>
+                <Switch checked={editForm.actif} onCheckedChange={(v) => setEditForm({ ...editForm, actif: !!v })} />
+              </div>
+              <div className="border-t pt-4">
+                <p className="text-sm font-medium mb-2">Compte kiosk</p>
+                <p className="text-xs text-muted-foreground mb-3">Login : <code className="bg-muted px-1 rounded">{editAntenne.loginKiosk}</code></p>
+                <div>
+                  <Label>Nouveau mot de passe kiosk (laisser vide pour ne pas changer)</Label>
+                  <Input type="password" value={newKioskPassword} onChange={(e) => setNewKioskPassword(e.target.value)} placeholder="Nouveau mot de passe..." />
+                </div>
+              </div>
+              <Button type="submit" className="w-full">Enregistrer les modifications</Button>
+            </form>
+          )}
+        </DialogContent>
+      </Dialog>
+
       <Card>
         <CardContent className="p-0">
           <Table>
@@ -99,24 +171,27 @@ export function AntennesPageClient({ antennes }: Props) {
                 <TableHead>Ville</TableHead>
                 <TableHead>Login kiosk</TableHead>
                 <TableHead>Statut</TableHead>
-                <TableHead className="w-20 text-center">Actions</TableHead>
+                <TableHead className="text-center">Actions</TableHead>
               </TableRow>
             </TableHeader>
             <TableBody>
               {antennes.map((a: any) => (
-                <TableRow key={a.id}>
+                <TableRow key={a.id} className={!a.actif ? "opacity-50" : ""}>
                   <TableCell className="font-medium">{a.nom}</TableCell>
                   <TableCell>{a.ville ?? "-"}</TableCell>
                   <TableCell><code className="text-sm bg-muted px-1 rounded">{a.loginKiosk}</code></TableCell>
                   <TableCell>
-                    <Badge className={a.actif ? "bg-green-100 text-green-800" : "bg-red-100 text-red-800"}>
+                    <Badge variant="secondary" className={a.actif ? "text-primary border-primary/30" : "text-destructive border-destructive/30"}>
                       {a.actif ? "Actif" : "Inactif"}
                     </Badge>
                   </TableCell>
                   <TableCell>
                     <div className="flex gap-1 justify-center">
-                      <Button variant="ghost" size="icon" onClick={() => handleDelete(a.id)}>
-                        <Trash2 className="h-4 w-4 text-red-500" />
+                      <Button variant="ghost" size="icon" onClick={() => openEdit(a)} title="Modifier">
+                        <Pencil className="h-4 w-4" />
+                      </Button>
+                      <Button variant="ghost" size="icon" onClick={() => handleDelete(a.id)} title="Supprimer">
+                        <Trash2 className="h-4 w-4 text-destructive" />
                       </Button>
                     </div>
                   </TableCell>
