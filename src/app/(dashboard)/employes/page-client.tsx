@@ -14,7 +14,7 @@ import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from 
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Switch } from "@/components/ui/switch";
 import { ROLES_LABELS, isGlobalRole, hasGlobalAccess } from "@/lib/constants";
-import { UserPlus, Fingerprint, Clock, Search, Users, ShieldCheck, ShieldAlert, ChevronUp, ChevronDown, Globe } from "lucide-react";
+import { UserPlus, Fingerprint, Clock, Search, Users, ShieldCheck, ShieldAlert, ChevronUp, ChevronDown, Globe, Pencil } from "lucide-react";
 import { toast } from "sonner";
 
 interface Props {
@@ -120,12 +120,101 @@ export function EmployesPageClient({ users, antennes, currentRole, currentAntenn
     router.refresh();
   }
 
+  // === Edition ===
+  const [editOpen, setEditOpen] = useState(false);
+  const [editUser, setEditUser] = useState<any>(null);
+  const [editForm, setEditForm] = useState({
+    nom: "", prenom: "", email: "", role: "EMPLOYE",
+    antenneId: "", accesGlobal: false,
+    heureDebutFixe: "07:30", heureFinFixe: "16:30",
+  });
+
+  function openEdit(u: any) {
+    setEditUser(u);
+    setEditForm({
+      nom: u.nom, prenom: u.prenom, email: u.email, role: u.role,
+      antenneId: u.antenneId ?? "",
+      accesGlobal: u.accesGlobal ?? false,
+      heureDebutFixe: u.heureDebutFixe ?? "07:30",
+      heureFinFixe: u.heureFinFixe ?? "16:30",
+    });
+    setEditOpen(true);
+  }
+
+  async function handleUpdate(e: React.FormEvent) {
+    e.preventDefault();
+    if (!editUser) return;
+    try {
+      await updateUser(editUser.id, {
+        nom: editForm.nom,
+        prenom: editForm.prenom,
+        email: editForm.email,
+        role: editForm.role as any,
+        antenneId: editForm.antenneId || null,
+        accesGlobal: editForm.accesGlobal,
+        heureDebutFixe: editForm.heureDebutFixe,
+        heureFinFixe: editForm.heureFinFixe,
+      });
+      toast.success("Employe modifie");
+      setEditOpen(false);
+      setEditUser(null);
+      router.refresh();
+    } catch (err: any) {
+      toast.error(err.message);
+    }
+  }
+
   const allowedRoles = isGlobalRole(currentRole)
     ? Object.entries(ROLES_LABELS)
     : [["EMPLOYE", ROLES_LABELS.EMPLOYE]];
 
   return (
     <div className="space-y-6">
+      {/* Dialog Edition */}
+      <Dialog open={editOpen} onOpenChange={setEditOpen}>
+        <DialogContent className="max-w-lg max-h-[90vh] overflow-y-auto">
+          <DialogHeader><DialogTitle>Modifier l&apos;employe</DialogTitle></DialogHeader>
+          {editUser && (
+            <form onSubmit={handleUpdate} className="space-y-4">
+              <div className="grid grid-cols-2 gap-3">
+                <div><Label>Nom</Label><Input value={editForm.nom} onChange={(e) => setEditForm({ ...editForm, nom: e.target.value })} required /></div>
+                <div><Label>Prenom</Label><Input value={editForm.prenom} onChange={(e) => setEditForm({ ...editForm, prenom: e.target.value })} required /></div>
+              </div>
+              <div><Label>Email</Label><Input type="email" value={editForm.email} onChange={(e) => setEditForm({ ...editForm, email: e.target.value })} required /></div>
+              <div className="grid grid-cols-2 gap-3">
+                <div>
+                  <Label>Role</Label>
+                  <select value={editForm.role} onChange={(e) => setEditForm({ ...editForm, role: e.target.value })} className="flex h-8 w-full rounded-lg border border-input bg-transparent px-2.5 text-sm outline-none focus-visible:border-ring focus-visible:ring-3 focus-visible:ring-ring/50">
+                    {allowedRoles.map(([k, v]) => <option key={k} value={k}>{v}</option>)}
+                  </select>
+                </div>
+                <div>
+                  <Label>Antenne</Label>
+                  <select value={editForm.antenneId} onChange={(e) => setEditForm({ ...editForm, antenneId: e.target.value })} disabled={!hasGlobalAccess(currentRole, currentAccesGlobal)} className="flex h-8 w-full rounded-lg border border-input bg-transparent px-2.5 text-sm outline-none focus-visible:border-ring focus-visible:ring-3 focus-visible:ring-ring/50 disabled:opacity-50">
+                    <option value="">Aucune</option>
+                    {antennes.map((a: any) => <option key={a.id} value={a.id}>{a.nom}</option>)}
+                  </select>
+                </div>
+              </div>
+              <div className="grid grid-cols-2 gap-3">
+                <div><Label>Heure debut</Label><Input type="time" value={editForm.heureDebutFixe} onChange={(e) => setEditForm({ ...editForm, heureDebutFixe: e.target.value })} /></div>
+                <div><Label>Heure fin</Label><Input type="time" value={editForm.heureFinFixe} onChange={(e) => setEditForm({ ...editForm, heureFinFixe: e.target.value })} /></div>
+              </div>
+              {(isGlobalRole(currentRole) || currentAccesGlobal) && (
+                <div className="flex items-center justify-between">
+                  <div>
+                    <Label>Acces global</Label>
+                    <p className="text-xs text-muted-foreground">Acces aux donnees de toutes les antennes</p>
+                  </div>
+                  <Switch checked={editForm.accesGlobal} onCheckedChange={(v) => setEditForm({ ...editForm, accesGlobal: !!v })} />
+                </div>
+              )}
+              <Button type="submit" className="w-full">Enregistrer les modifications</Button>
+            </form>
+          )}
+        </DialogContent>
+      </Dialog>
+
       {/* Header */}
       <div className="flex items-center justify-between">
         <div>
@@ -315,6 +404,9 @@ export function EmployesPageClient({ users, antennes, currentRole, currentAntenn
                       </TableCell>
                       <TableCell>
                         <div className="flex gap-1">
+                          <Button variant="ghost" size="icon" onClick={() => openEdit(u)} title="Modifier">
+                            <Pencil className="h-4 w-4" />
+                          </Button>
                           <Button variant="ghost" size="icon" nativeButton={false} render={<Link href={`/pointages/${u.id}`} />} title="Voir pointages">
                             <Clock className="h-4 w-4" />
                           </Button>
