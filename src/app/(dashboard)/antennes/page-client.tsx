@@ -22,15 +22,14 @@ export function AntennesPageClient({ antennes }: Props) {
   const router = useRouter();
   const [open, setOpen] = useState(false);
   const [form, setForm] = useState({
-    nom: "", ville: "", adresse: "", telephone: "",
-    loginKiosk: "", passwordKiosk: "",
+    nom: "", ville: "", loginKiosk: "", passwordKiosk: "",
   });
 
   // Edition
   const [editOpen, setEditOpen] = useState(false);
   const [editAntenne, setEditAntenne] = useState<any>(null);
   const [editForm, setEditForm] = useState({
-    nom: "", ville: "", adresse: "", telephone: "", actif: true,
+    nom: "", ville: "", actif: true,
   });
   const [newKioskPassword, setNewKioskPassword] = useState("");
 
@@ -40,14 +39,12 @@ export function AntennesPageClient({ antennes }: Props) {
       await createAntenne({
         nom: form.nom,
         ville: form.ville || undefined,
-        adresse: form.adresse || undefined,
-        telephone: form.telephone || undefined,
         loginKiosk: form.loginKiosk,
         passwordKiosk: form.passwordKiosk,
       });
       toast.success("Antenne creee avec succes");
       setOpen(false);
-      setForm({ nom: "", ville: "", adresse: "", telephone: "", loginKiosk: "", passwordKiosk: "" });
+      setForm({ nom: "", ville: "", loginKiosk: "", passwordKiosk: "" });
       router.refresh();
     } catch (err: any) {
       toast.error(err.message);
@@ -57,8 +54,7 @@ export function AntennesPageClient({ antennes }: Props) {
   function openEdit(a: any) {
     setEditAntenne(a);
     setEditForm({
-      nom: a.nom, ville: a.ville ?? "", adresse: a.adresse ?? "",
-      telephone: a.telephone ?? "", actif: a.actif,
+      nom: a.nom, ville: a.ville ?? "", actif: a.actif,
     });
     setNewKioskPassword("");
     setEditOpen(true);
@@ -71,8 +67,6 @@ export function AntennesPageClient({ antennes }: Props) {
       await updateAntenne(editAntenne.id, {
         nom: editForm.nom,
         ville: editForm.ville || undefined,
-        adresse: editForm.adresse || undefined,
-        telephone: editForm.telephone || undefined,
         actif: editForm.actif,
       });
       if (newKioskPassword.trim()) {
@@ -113,12 +107,10 @@ export function AntennesPageClient({ antennes }: Props) {
           <DialogContent>
             <DialogHeader><DialogTitle>Creer une antenne</DialogTitle></DialogHeader>
             <form onSubmit={handleCreate} className="space-y-4">
-              <div><Label>Nom de l&apos;antenne</Label><Input value={form.nom} onChange={(e) => setForm({ ...form, nom: e.target.value })} placeholder="Antenne Abidjan" required /></div>
               <div className="grid grid-cols-2 gap-3">
+                <div><Label>Nom de l&apos;antenne</Label><Input value={form.nom} onChange={(e) => setForm({ ...form, nom: e.target.value })} placeholder="Antenne Abidjan" required /></div>
                 <div><Label>Ville</Label><Input value={form.ville} onChange={(e) => setForm({ ...form, ville: e.target.value })} /></div>
-                <div><Label>Telephone</Label><Input value={form.telephone} onChange={(e) => setForm({ ...form, telephone: e.target.value })} /></div>
               </div>
-              <div><Label>Adresse</Label><Input value={form.adresse} onChange={(e) => setForm({ ...form, adresse: e.target.value })} /></div>
               <div className="border-t pt-4">
                 <p className="text-sm font-medium mb-3">Compte kiosk (pour le poste de pointage)</p>
                 <div className="grid grid-cols-2 gap-3">
@@ -138,12 +130,10 @@ export function AntennesPageClient({ antennes }: Props) {
           <DialogHeader><DialogTitle>Modifier l&apos;antenne</DialogTitle></DialogHeader>
           {editAntenne && (
             <form onSubmit={handleUpdate} className="space-y-4">
-              <div><Label>Nom</Label><Input value={editForm.nom} onChange={(e) => setEditForm({ ...editForm, nom: e.target.value })} required /></div>
               <div className="grid grid-cols-2 gap-3">
+                <div><Label>Nom</Label><Input value={editForm.nom} onChange={(e) => setEditForm({ ...editForm, nom: e.target.value })} required /></div>
                 <div><Label>Ville</Label><Input value={editForm.ville} onChange={(e) => setEditForm({ ...editForm, ville: e.target.value })} /></div>
-                <div><Label>Telephone</Label><Input value={editForm.telephone} onChange={(e) => setEditForm({ ...editForm, telephone: e.target.value })} /></div>
               </div>
-              <div><Label>Adresse</Label><Input value={editForm.adresse} onChange={(e) => setEditForm({ ...editForm, adresse: e.target.value })} /></div>
               <div className="flex items-center justify-between">
                 <Label>Actif</Label>
                 <Switch checked={editForm.actif} onCheckedChange={(v) => setEditForm({ ...editForm, actif: !!v })} />
