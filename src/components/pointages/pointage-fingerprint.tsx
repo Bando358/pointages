@@ -42,6 +42,7 @@ export function PointageFingerprint({ antenneId, onPointageComplete }: Props) {
 
       if (data.action === "arrivee") soundArrivee();
       else if (data.action === "depart") soundDepart();
+      else if (data.action === "arrivee_recente") soundDejaComplet();
       else if (data.action === "deja_complet") soundDejaComplet();
 
       setActionEffectuee(data.action);
@@ -244,6 +245,13 @@ export function PointageFingerprint({ antenneId, onPointageComplete }: Props) {
                 <LogOut className="h-10 w-10 text-primary mx-auto" />
                 <p className="text-2xl font-bold">Au revoir {identifiedUser.prenom} !</p>
                 <p className="text-sm text-muted-foreground">Depart enregistre</p>
+              </>
+            )}
+            {actionEffectuee === "arrivee_recente" && (
+              <>
+                <CheckCircle className="h-10 w-10 text-primary mx-auto" />
+                <p className="text-2xl font-bold">Bonjour {identifiedUser.prenom} !</p>
+                <p className="text-sm text-muted-foreground">Votre arrivee est deja enregistree</p>
               </>
             )}
             {actionEffectuee === "deja_complet" && (

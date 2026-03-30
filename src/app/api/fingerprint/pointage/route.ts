@@ -29,6 +29,9 @@ export async function POST(req: NextRequest) {
 
     const todayPointage = await getTodayPointage(userId);
 
+    // Delai minimum entre arrivee et depart (30 minutes)
+    const DELAI_MIN_MINUTES = 30;
+
     let action: "arrivee" | "depart";
     let pointage;
 
@@ -36,6 +39,21 @@ export async function POST(req: NextRequest) {
       action = "arrivee";
       pointage = await checkIn(userId, antenneId);
     } else if (!todayPointage.heureDepart) {
+      // Verifier le delai minimum depuis l'arrivee
+      const arrivee = new Date(todayPointage.heureArrivee);
+      const maintenant = new Date();
+      const diffMinutes = (maintenant.getTime() - arrivee.getTime()) / 60000;
+
+      if (diffMinutes < DELAI_MIN_MINUTES) {
+        // Trop tot pour pointer le depart - ignorer silencieusement
+        return NextResponse.json({
+          success: true,
+          pointage: todayPointage,
+          action: "arrivee_recente",
+          message: `Arrivee deja enregistree a ${arrivee.toLocaleTimeString("fr-FR", { hour: "2-digit", minute: "2-digit" })}`,
+        });
+      }
+
       action = "depart";
       pointage = await checkOut(userId);
     } else {
