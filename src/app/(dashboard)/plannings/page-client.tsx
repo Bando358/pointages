@@ -454,21 +454,22 @@ function SemaineEditor({
       {semaine.jours.map((jour, ji) => (
         <div
           key={ji}
-          className={`rounded-xl border p-3 transition-all ${
+          className={`rounded-xl border p-3 transition-all cursor-pointer ${
             jour.actif
               ? "border-primary/30 bg-primary/5"
-              : "border-border/50 bg-muted/20 opacity-60"
+              : "border-dashed border-border hover:border-primary/30 hover:bg-primary/3"
           }`}
+          onClick={() => !jour.actif && updateJour(semaineIdx, ji, "actif", true)}
         >
           <div className="flex items-center gap-3">
             {/* Toggle jour */}
             <button
               type="button"
-              onClick={() => updateJour(semaineIdx, ji, "actif", !jour.actif)}
+              onClick={(e) => { e.stopPropagation(); updateJour(semaineIdx, ji, "actif", !jour.actif); }}
               className={`w-12 h-12 rounded-lg text-sm font-bold transition-all shrink-0 ${
                 jour.actif
                   ? "bg-primary text-primary-foreground shadow-md"
-                  : "bg-muted text-muted-foreground hover:bg-muted/80"
+                  : "bg-muted text-muted-foreground hover:bg-primary/20 hover:text-primary"
               }`}
             >
               {JOURS[ji + 1]}
@@ -477,7 +478,7 @@ function SemaineEditor({
             <div className="flex-1 min-w-0">
               <p className={`text-sm font-medium ${jour.actif ? "" : "text-muted-foreground"}`}>
                 {JOURS_FULL[ji + 1]}
-                {!jour.actif && <span className="text-xs ml-2 text-muted-foreground/60">- Repos</span>}
+                {!jour.actif && <span className="text-xs ml-2 text-primary/50">Cliquer pour activer</span>}
               </p>
 
               {jour.actif && (

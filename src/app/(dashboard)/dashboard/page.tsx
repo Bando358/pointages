@@ -8,7 +8,7 @@ import { hasGlobalAccess } from "@/lib/constants";
 
 export default async function DashboardPage() {
   const session = await getServerSession(authOptions);
-  if (!session) redirect("/login");
+  if (!session?.user) redirect("/login");
   if (session.user.loginType === "kiosk") redirect("/pointages");
 
   const accesGlobal = hasGlobalAccess(session.user.role, session.user.accesGlobal ?? false);
