@@ -222,8 +222,9 @@ export async function upsertPointageManuel(
     return d;
   };
 
-  const heureArrivee = parseOpt(data.heureArrivee);
-  const heureDepart = parseOpt(data.heureDepart);
+  // null si vide (pour effacer en base), pas undefined (qui serait ignore par Prisma)
+  const heureArrivee = parseOpt(data.heureArrivee) ?? null;
+  const heureDepart = parseOpt(data.heureDepart) ?? null;
 
   let totalHeures = 0;
   let heuresSupp = 0;
@@ -248,16 +249,16 @@ export async function upsertPointageManuel(
     update: {
       heureArrivee, heureDepart,
       statut, retardMinutes, heuresSupp, totalHeures,
-      observations: data.observations,
-      justificatif: data.justificatif,
+      observations: data.observations ?? null,
+      justificatif: data.justificatif ?? null,
       saisieManuelle: true,
     },
     create: {
       userId, date: dateOnly,
       heureArrivee, heureDepart,
       statut, retardMinutes, heuresSupp, totalHeures,
-      observations: data.observations,
-      justificatif: data.justificatif,
+      observations: data.observations ?? null,
+      justificatif: data.justificatif ?? null,
       saisieManuelle: true,
     },
   });
