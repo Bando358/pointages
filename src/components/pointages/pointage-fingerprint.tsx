@@ -235,22 +235,23 @@ export function PointageFingerprint({ antenneId, onPointageComplete }: Props) {
             {actionEffectuee === "arrivee" && (
               <>
                 <LogIn className="h-10 w-10 text-primary mx-auto" />
-                <p className="text-lg font-bold">Arrivee enregistree !</p>
+                <p className="text-2xl font-bold">Bienvenue {identifiedUser.prenom} !</p>
+                <p className="text-sm text-muted-foreground">Arrivee enregistree</p>
               </>
             )}
             {actionEffectuee === "depart" && (
               <>
                 <LogOut className="h-10 w-10 text-primary mx-auto" />
-                <p className="text-lg font-bold">Depart enregistre !</p>
+                <p className="text-2xl font-bold">Au revoir {identifiedUser.prenom} !</p>
+                <p className="text-sm text-muted-foreground">Depart enregistre</p>
               </>
             )}
             {actionEffectuee === "deja_complet" && (
               <>
                 <CheckCircle className="h-10 w-10 text-muted-foreground mx-auto" />
-                <p className="text-lg font-bold">Deja pointe aujourd&apos;hui</p>
+                <p className="text-lg font-bold">{identifiedUser.prenom}, vous avez deja pointe aujourd&apos;hui</p>
               </>
             )}
-            <p className="text-base font-semibold text-muted-foreground">{identifiedUser.prenom} {identifiedUser.nom}</p>
           </div>
         )}
 
