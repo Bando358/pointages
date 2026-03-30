@@ -9,7 +9,7 @@ import { Badge } from "@/components/ui/badge";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
 import {
-  Users, Clock, TrendingUp, AlertTriangle,
+  Users, Clock, TrendingUp, AlertTriangle, AlertOctagon,
   CalendarDays, Timer, CheckCircle, XCircle, Fingerprint, Filter,
 } from "lucide-react";
 import { STATUT_POINTAGE_LABELS, STATUT_POINTAGE_COLORS, TYPE_ABSENCE_TEMP_LABELS, isGlobalRole } from "@/lib/constants";
@@ -288,6 +288,11 @@ export function DashboardClient({
               Absences temp.
               {listings.absencesTemp?.length > 0 && <Badge variant="secondary" className="ml-1.5 text-xs">{listings.absencesTemp.length}</Badge>}
             </TabsTrigger>
+            <TabsTrigger value="incomplets">
+              <AlertOctagon className="h-3.5 w-3.5 mr-1" />
+              Incomplets
+              {listings.incomplets?.length > 0 && <Badge variant="destructive" className="ml-1.5 text-xs">{listings.incomplets.length}</Badge>}
+            </TabsTrigger>
           </TabsList>
 
           {/* Tab Retardataires */}
@@ -436,6 +441,49 @@ export function DashboardClient({
                   </Table>
                 ) : (
                   <p className="text-sm text-muted-foreground text-center py-6">Aucune absence temporaire ce mois</p>
+                )}
+              </CardContent>
+            </Card>
+          </TabsContent>
+
+          {/* Tab Pointages incomplets */}
+          <TabsContent value="incomplets">
+            <Card>
+              <CardHeader>
+                <CardTitle className="text-base flex items-center gap-2">
+                  <AlertOctagon className="h-4 w-4 text-destructive" />
+                  Pointages incomplets - {MONTHS[month - 1]} {year}
+                </CardTitle>
+                <p className="text-xs text-muted-foreground">Employes ayant pointe l&apos;arrivee mais pas le depart</p>
+              </CardHeader>
+              <CardContent>
+                {listings.incomplets?.length > 0 ? (
+                  <Table>
+                    <TableHeader>
+                      <TableRow>
+                        <TableHead>Employe</TableHead>
+                        <TableHead>Antenne</TableHead>
+                        <TableHead>Date</TableHead>
+                        <TableHead>Heure arrivee</TableHead>
+                        <TableHead>Depart</TableHead>
+                      </TableRow>
+                    </TableHeader>
+                    <TableBody>
+                      {listings.incomplets.map((p: any, i: number) => (
+                        <TableRow key={i}>
+                          <TableCell className="font-medium">{p.prenom} {p.nom}</TableCell>
+                          <TableCell className="text-sm text-muted-foreground">{p.antenne}</TableCell>
+                          <TableCell className="text-sm">{new Date(p.date).toLocaleDateString("fr-FR")}</TableCell>
+                          <TableCell className="text-sm">{p.heureArrivee ? formatTimeFr(p.heureArrivee) : "-"}</TableCell>
+                          <TableCell>
+                            <Badge variant="destructive" className="text-xs">Manquant</Badge>
+                          </TableCell>
+                        </TableRow>
+                      ))}
+                    </TableBody>
+                  </Table>
+                ) : (
+                  <p className="text-sm text-muted-foreground text-center py-6">Tous les pointages sont complets</p>
                 )}
               </CardContent>
             </Card>

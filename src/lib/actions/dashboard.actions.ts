@@ -97,7 +97,7 @@ export async function fetchDashboardData(options: {
   ]);
 
   // Listings detailles du mois
-  const [retardataires, absentsList, congesList, absencesTempList] = await Promise.all([
+  const [retardataires, absentsList, congesList, absencesTempList, incompletsList] = await Promise.all([
     // Top retardataires du mois
     prisma.pointage.groupBy({
       by: ["userId"],
@@ -147,6 +147,21 @@ export async function fetchDashboardData(options: {
       include: { user: { select: { nom: true, prenom: true } }, validePar: { select: { nom: true, prenom: true } } },
       orderBy: { createdAt: "desc" },
       take: 20,
+    }),
+
+    // Pointages incomplets (arrivee sans depart)
+    prisma.pointage.findMany({
+      where: {
+        date: { gte: monthStart, lte: monthEnd },
+        heureArrivee: { not: null },
+        heureDepart: null,
+        user: { ...excludeSuperAdmin, ...antenneFilter },
+      },
+      include: {
+        user: { select: { nom: true, prenom: true, antenne: { select: { nom: true } } } },
+      },
+      orderBy: { date: "desc" },
+      take: 30,
     }),
   ]);
 
@@ -294,6 +309,13 @@ export async function fetchDashboardData(options: {
         motif: a.motif,
         statut: a.statut,
         validePar: a.validePar ? `${a.validePar.prenom} ${a.validePar.nom}` : null,
+      })),
+      incomplets: incompletsList.map((p: any) => ({
+        nom: p.user.nom,
+        prenom: p.user.prenom,
+        antenne: p.user.antenne?.nom ?? "-",
+        date: p.date.toISOString(),
+        heureArrivee: p.heureArrivee?.toISOString() ?? null,
       })),
     },
   };
