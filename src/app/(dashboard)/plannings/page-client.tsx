@@ -12,9 +12,10 @@ import { Badge } from "@/components/ui/badge";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
-import { CalendarRange, Plus, Trash2, Eye, Users, Clock, Coffee } from "lucide-react";
+import { CalendarRange, Plus, Trash2, Eye, Users, Clock, Coffee, ShieldAlert } from "lucide-react";
 import { toast } from "sonner";
 import { hasGlobalAccess } from "@/lib/constants";
+import { Badge as UiBadge } from "@/components/ui/badge";
 
 const JOURS_FULL = ["", "Lundi", "Mardi", "Mercredi", "Jeudi", "Vendredi", "Samedi", "Dimanche"];
 const JOURS = ["", "Lun", "Mar", "Mer", "Jeu", "Ven", "Sam", "Dim"];
@@ -223,6 +224,10 @@ export function PlanningsPageClient({ plannings, antennes, currentAntenneId, cur
           </h2>
           <p className="text-muted-foreground">{plannings.length} planning(s) actif(s)</p>
         </div>
+        <div className="flex items-center gap-2">
+          <Button variant="outline" nativeButton={false} render={<Link href="/plannings/rotation" />}>
+            <ShieldAlert className="h-4 w-4 mr-2" />Rotation de garde
+          </Button>
         <Dialog open={open} onOpenChange={(o) => { setOpen(o); if (!o) resetForm(); }}>
           <DialogTrigger render={<Button />}><Plus className="h-4 w-4 mr-2" />Nouveau planning</DialogTrigger>
           <DialogContent className="max-w-2xl max-h-[90vh] overflow-y-auto">
@@ -353,6 +358,7 @@ export function PlanningsPageClient({ plannings, antennes, currentAntenneId, cur
             )}
           </DialogContent>
         </Dialog>
+        </div>
       </div>
 
       {/* Liste des plannings */}

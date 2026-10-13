@@ -84,6 +84,41 @@ export const DOIGT_LABELS: Record<number, string> = {
   10: "Auriculaire gauche",
 };
 
+// ==================== ROTATION GARDE ====================
+
+export const TYPE_SHIFT_LABELS: Record<string, string> = {
+  PERMANENCE: "Permanence",
+  GARDE: "Garde",
+  REPOS: "Repos",
+};
+
+export const TYPE_SHIFT_COLORS: Record<string, string> = {
+  PERMANENCE: "bg-blue-100 text-blue-800 border-blue-300",
+  GARDE: "bg-amber-100 text-amber-800 border-amber-300",
+  REPOS: "bg-gray-100 text-gray-500 border-gray-200",
+};
+
+export const TYPE_SHIFT_DOT_COLORS: Record<string, string> = {
+  PERMANENCE: "bg-blue-500",
+  GARDE: "bg-amber-500",
+  REPOS: "bg-gray-300",
+};
+
+/** Horaires par defaut pour chaque type de shift */
+export const SHIFT_DEFAULTS = {
+  PERMANENCE: { heureDebut: "07:30", heureFin: "18:30", finLendemain: false },
+  GARDE:      { heureDebut: "18:30", heureFin: "08:30", finLendemain: true },
+  REPOS:      { heureDebut: null,    heureFin: null,    finLendemain: false },
+} as const;
+
+/** Cycle par defaut : Permanence, Garde, Repos, Repos (4 jours) */
+export const CYCLE_GARDE_DEFAULT: Array<"PERMANENCE" | "GARDE" | "REPOS"> = [
+  "PERMANENCE",
+  "GARDE",
+  "REPOS",
+  "REPOS",
+];
+
 export const MATCH_THRESHOLD = 100;
 export const MIN_QUALITY = 40;
 export const ENROLLMENT_CAPTURES = 3;
